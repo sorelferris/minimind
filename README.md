@@ -236,7 +236,7 @@ pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 ### 2.下载模型
-到项目根目录
+到项目根目录 (确保git-lfs已安装: `git lfs install`)
 ```bash
 git clone https://huggingface.co/jingyaogong/MiniMind2
 ```
