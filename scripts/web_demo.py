@@ -8,7 +8,8 @@ import streamlit as st
 
 st.set_page_config(page_title="MiniMind", initial_sidebar_state="collapsed")
 
-st.markdown("""
+st.markdown(
+    """
     <style>
         /* 添加操作按钮样式 */
         .stButton button {
@@ -62,49 +63,51 @@ st.markdown("""
         }
 
     </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 system_prompt = []
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
 def process_assistant_content(content):
-    if model_source == "API" and 'R1' not in api_model_name:
+    if model_source == "API" and "R1" not in api_model_name:
         return content
-    if model_source != "API" and 'R1' not in MODEL_PATHS[selected_model][1]:
+    if model_source != "API" and "R1" not in MODEL_PATHS[selected_model][1]:
         return content
 
-    if '<think>' in content and '</think>' in content:
-        content = re.sub(r'(<think>)(.*?)(</think>)',
-                         r'<details style="font-style: italic; background: rgba(222, 222, 222, 0.5); padding: 10px; border-radius: 10px;"><summary style="font-weight:bold;">推理内容（展开）</summary>\2</details>',
-                         content,
-                         flags=re.DOTALL)
+    if "<think>" in content and "</think>" in content:
+        content = re.sub(
+            r"(<think>)(.*?)(</think>)",
+            r'<details style="font-style: italic; background: rgba(222, 222, 222, 0.5); padding: 10px; border-radius: 10px;"><summary style="font-weight:bold;">推理内容（展开）</summary>\2</details>',
+            content,
+            flags=re.DOTALL,
+        )
 
-    if '<think>' in content and '</think>' not in content:
-        content = re.sub(r'<think>(.*?)$',
-                         r'<details open style="font-style: italic; background: rgba(222, 222, 222, 0.5); padding: 10px; border-radius: 10px;"><summary style="font-weight:bold;">推理中...</summary>\1</details>',
-                         content,
-                         flags=re.DOTALL)
+    if "<think>" in content and "</think>" not in content:
+        content = re.sub(
+            r"<think>(.*?)$",
+            r'<details open style="font-style: italic; background: rgba(222, 222, 222, 0.5); padding: 10px; border-radius: 10px;"><summary style="font-weight:bold;">推理中...</summary>\1</details>',
+            content,
+            flags=re.DOTALL,
+        )
 
-    if '<think>' not in content and '</think>' in content:
-        content = re.sub(r'(.*?)</think>',
-                         r'<details style="font-style: italic; background: rgba(222, 222, 222, 0.5); padding: 10px; border-radius: 10px;"><summary style="font-weight:bold;">推理内容（展开）</summary>\1</details>',
-                         content,
-                         flags=re.DOTALL)
+    if "<think>" not in content and "</think>" in content:
+        content = re.sub(
+            r"(.*?)</think>",
+            r'<details style="font-style: italic; background: rgba(222, 222, 222, 0.5); padding: 10px; border-radius: 10px;"><summary style="font-weight:bold;">推理内容（展开）</summary>\1</details>',
+            content,
+            flags=re.DOTALL,
+        )
 
     return content
 
 
 @st.cache_resource
 def load_model_tokenizer(model_path):
-    model = AutoModelForCausalLM.from_pretrained(
-        model_path,
-        trust_remote_code=True
-    )
-    tokenizer = AutoTokenizer.from_pretrained(
-        model_path,
-        trust_remote_code=True
-    )
+    model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     model = model.eval().to(device)
     return model, tokenizer
 
@@ -129,13 +132,15 @@ def init_chat_messages():
             else:
                 st.markdown(
                     f'<div style="display: flex; justify-content: flex-end;"><div style="display: inline-block; margin: 10px 0; padding: 8px 12px 8px 12px;  background-color: #ddd; border-radius: 10px; color: black;">{message["content"]}</div></div>',
-                    unsafe_allow_html=True)
+                    unsafe_allow_html=True,
+                )
 
     else:
         st.session_state.messages = []
         st.session_state.chat_messages = []
 
     return st.session_state.messages
+
 
 def regenerate_answer(index):
     st.session_state.messages.pop()
@@ -173,24 +178,26 @@ else:
         "MiniMind2-Small-R1 (0.02B)": ["../MiniMind2-Small-R1", "MiniMind2-Small-R1"],
         "MiniMind2 (0.1B)": ["../MiniMind2", "MiniMind2"],
         "MiniMind2-MoE (0.15B)": ["../MiniMind2-MoE", "MiniMind2-MoE"],
-        "MiniMind2-Small (0.02B)": ["../MiniMind2-Small", "MiniMind2-Small"]
+        "MiniMind2-Small (0.02B)": ["../MiniMind2-Small", "MiniMind2-Small"],
     }
 
-    selected_model = st.sidebar.selectbox('Models', list(MODEL_PATHS.keys()), index=2)  # 默认选择 MiniMind2
+    selected_model = st.sidebar.selectbox("Models", list(MODEL_PATHS.keys()), index=2)  # 默认选择 MiniMind2
     model_path = MODEL_PATHS[selected_model][0]
     slogan = f"Hi, I'm {MODEL_PATHS[selected_model][1]}"
 
-image_url = "https://www.modelscope.cn/api/v1/studio/gongjy/MiniMind/repo?Revision=master&FilePath=images%2Flogo2.png&View=true"
+image_url = (
+    "https://www.modelscope.cn/api/v1/studio/gongjy/MiniMind/repo?Revision=master&FilePath=images%2Flogo2.png&View=true"
+)
 
 st.markdown(
     f'<div style="display: flex; flex-direction: column; align-items: center; text-align: center; margin: 0; padding: 0;">'
     '<div style="font-style: italic; font-weight: 900; margin: 0; padding-top: 4px; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; width: 100%;">'
     f'<img src="{image_url}" style="width: 45px; height: 45px; "> '
     f'<span style="font-size: 26px; margin-left: 10px;">{slogan}</span>'
-    '</div>'
+    "</div>"
     '<span style="color: #bbb; font-style: italic; margin-top: 6px; margin-bottom: 10px;">内容完全由AI生成，请务必仔细甄别<br>Content AI-generated, please discern with care</span>'
-    '</div>',
-    unsafe_allow_html=True
+    "</div>",
+    unsafe_allow_html=True,
 )
 
 
@@ -221,29 +228,31 @@ def main():
             with st.chat_message("assistant", avatar=image_url):
                 st.markdown(process_assistant_content(message["content"]), unsafe_allow_html=True)
                 if st.button("×", key=f"delete_{i}"):
-                    st.session_state.messages = st.session_state.messages[:i - 1]
-                    st.session_state.chat_messages = st.session_state.chat_messages[:i - 1]
+                    st.session_state.messages = st.session_state.messages[: i - 1]
+                    st.session_state.chat_messages = st.session_state.chat_messages[: i - 1]
                     st.rerun()
         else:
             st.markdown(
                 f'<div style="display: flex; justify-content: flex-end;"><div style="display: inline-block; margin: 10px 0; padding: 8px 12px 8px 12px;  background-color: gray; border-radius: 10px; color:white; ">{message["content"]}</div></div>',
-                unsafe_allow_html=True)
+                unsafe_allow_html=True,
+            )
 
     prompt = st.chat_input(key="input", placeholder="给 MiniMind 发送消息")
 
-    if hasattr(st.session_state, 'regenerate') and st.session_state.regenerate:
+    if hasattr(st.session_state, "regenerate") and st.session_state.regenerate:
         prompt = st.session_state.last_user_message
         regenerate_index = st.session_state.regenerate_index
-        delattr(st.session_state, 'regenerate')
-        delattr(st.session_state, 'last_user_message')
-        delattr(st.session_state, 'regenerate_index')
+        delattr(st.session_state, "regenerate")
+        delattr(st.session_state, "last_user_message")
+        delattr(st.session_state, "regenerate_index")
 
     if prompt:
         st.markdown(
             f'<div style="display: flex; justify-content: flex-end;"><div style="display: inline-block; margin: 10px 0; padding: 8px 12px 8px 12px;  background-color: gray; border-radius: 10px; color:white; ">{prompt}</div></div>',
-            unsafe_allow_html=True)
-        messages.append({"role": "user", "content": prompt[-st.session_state.max_new_tokens:]})
-        st.session_state.chat_messages.append({"role": "user", "content": prompt[-st.session_state.max_new_tokens:]})
+            unsafe_allow_html=True,
+        )
+        messages.append({"role": "user", "content": prompt[-st.session_state.max_new_tokens :]})
+        st.session_state.chat_messages.append({"role": "user", "content": prompt[-st.session_state.max_new_tokens :]})
 
         with st.chat_message("assistant", avatar=image_url):
             placeholder = st.empty()
@@ -252,10 +261,7 @@ def main():
                 try:
                     from openai import OpenAI
 
-                    client = OpenAI(
-                        api_key=api_key,
-                        base_url=api_url
-                    )
+                    client = OpenAI(api_key=api_key, base_url=api_url)
                     history_num = st.session_state.history_chat_num + 1  # +1 是为了包含当前的用户消息
                     conversation_history = system_prompt + st.session_state.chat_messages[-history_num:]
                     answer = ""
@@ -263,7 +269,7 @@ def main():
                         model=api_model_id,
                         messages=conversation_history,
                         stream=True,
-                        temperature=st.session_state.temperature
+                        temperature=st.session_state.temperature,
                     )
 
                     for chunk in response:
@@ -275,22 +281,17 @@ def main():
                     answer = f"API调用出错: {str(e)}"
                     placeholder.markdown(answer, unsafe_allow_html=True)
             else:
-                random_seed = random.randint(0, 2 ** 32 - 1)
+                random_seed = random.randint(0, 2**32 - 1)
                 setup_seed(random_seed)
 
-                st.session_state.chat_messages = system_prompt + st.session_state.chat_messages[
-                                                                 -(st.session_state.history_chat_num + 1):]
+                st.session_state.chat_messages = (
+                    system_prompt + st.session_state.chat_messages[-(st.session_state.history_chat_num + 1) :]
+                )
                 new_prompt = tokenizer.apply_chat_template(
-                    st.session_state.chat_messages,
-                    tokenize=False,
-                    add_generation_prompt=True
+                    st.session_state.chat_messages, tokenize=False, add_generation_prompt=True
                 )
 
-                inputs = tokenizer(
-                    new_prompt,
-                    return_tensors="pt",
-                    truncation=True
-                ).to(device)
+                inputs = tokenizer(new_prompt, return_tensors="pt", truncation=True).to(device)
 
                 streamer = TextIteratorStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
                 generation_kwargs = {
